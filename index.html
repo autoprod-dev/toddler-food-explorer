@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#FBF4EA">
+<meta name="description" content="Toddler Food Explorer — a private, on-device food exposure and food chaining tracker.">
+<title>Toddler Food Explorer</title>
+<style>
+  :root{
+    --paper:#FBF4EA;
+    --paper2:#FFFDF9;
+    --card:#FFFFFF;
+    --ink:#2B2620;
+    --ink-soft:#6E655A;
+    --line:#EADFCF;
+    --accent:#D2703F;
+    --accent-dark:#B3582B;
+    --accent-bg:#FBE6D8;
+    --ate:#4E9A62;
+    --ate-bg:#E2F2E5;
+    --touch:#D9A12E;
+    --touch-bg:#FBF0D6;
+    --refuse:#CF6464;
+    --refuse-bg:#F9E1E1;
+    --info:#4F7FA8;
+    --info-bg:#E3EEF7;
+    --warn-bg:#FFF4DC;
+    --warn-line:#EFCB7A;
+    --shadow-sm:0 1px 2px rgba(60,40,20,.06);
+    --shadow-md:0 4px 16px rgba(60,40,20,.08);
+    --radius:16px;
+    --nav-h:64px;
+    --foot-h:40px;
+    --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --font-head:Georgia,"Iowan Old Style","Palatino Linotype",serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%;}
+  body{padding-bottom:calc(var(--nav-h) + var(--foot-h) + env(safe-area-inset-bottom) + 12px);}
+  button,input,select,textarea{font:inherit;color:inherit;}
+  button{cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  h1,h2,h3{font-family:var(--font-head);letter-spacing:-.01em;margin:0;}
+  .hidden{display:none !important;}
+  .top{padding:16px 16px 8px;max-width:820px;margin:0 auto;display:flex;align-items:center;gap:12px;}
+  .logo{width:46px;height:46px;border-radius:14px;background:var(--accent-bg);display:grid;place-items:center;font-size:26px;flex:0 0 auto;}
+  .top h1{font-size:22px;line-height:1.15;}
+  .top .sub{font-size:13.5px;color:var(--ink-soft);}
+  .nav{position:fixed;left:0;right:0;bottom:calc(var(--foot-h) + env(safe-area-inset-bottom));height:var(--nav-h);background:var(--paper2);border-top:1px solid var(--line);display:flex;z-index:40;box-shadow:0 -4px 14px rgba(60,40,20,.05);}
+  .nav button{flex:1 1 0;border:0;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11.5px;font-weight:600;color:var(--ink-soft);padding:6px 2px;min-width:0;}
+  .nav button .ico{font-size:22px;line-height:1;}
+  .nav button.active{color:var(--accent-dark);}
+  .nav button.active .ico{transform:scale(1.1);}
+  .nav button.active::after{content:"";width:22px;height:3px;border-radius:3px;background:var(--accent);margin-top:2px;}
+  .footer-note{position:fixed;left:0;right:0;bottom:0;min-height:var(--foot-h);padding:5px 12px calc(5px + env(safe-area-inset-bottom));background:#F3E7D6;color:#5D5246;font-size:11px;line-height:1.3;text-align:center;z-index:41;display:flex;align-items:center;justify-content:center;}
+  main{max-width:820px;margin:0 auto;padding:4px 14px 20px;}
+  .view{display:none;}
+  .view.active{display:block;animation:fade .18s ease;}
+  @keyframes fade{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-sm);margin-bottom:14px;}
+  .card h2{font-size:20px;margin-bottom:4px;}
+  .muted{color:var(--ink-soft);font-size:14px;}
+  .small{font-size:13px;}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .spacer{flex:1 1 auto;}
+  label.lbl,.lbl{display:block;font-weight:700;font-size:14px;margin:16px 0 7px;}
+  .lbl .opt{font-weight:500;color:var(--ink-soft);font-size:12.5px;}
+  input[type=text],input[type=date],input[type=search],textarea{width:100%;border:1.5px solid var(--line);background:var(--paper2);border-radius:12px;padding:12px 13px;font-size:16px;min-height:48px;outline:none;transition:border-color .12s;}
+  input:focus,textarea:focus{border-color:var(--accent);background:#fff;}
+  textarea{min-height:76px;resize:vertical;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{border:1.5px solid var(--line);background:var(--paper2);border-radius:999px;padding:9px 14px;min-height:44px;font-size:14.5px;font-weight:600;color:var(--ink);display:inline-flex;align-items:center;gap:6px;transition:.1s;}
+  .chip:active{transform:scale(.97);}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .chip .sw{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.15);display:inline-block;}
+  .chip.on .sw{border-color:#fff;}
+  .results{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;}
+  .res{border:2px solid var(--line);background:var(--paper2);border-radius:16px;min-height:86px;padding:10px 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-weight:700;font-size:14.5px;line-height:1.15;text-align:center;transition:.1s;}
+  .res .e{font-size:30px;line-height:1;}
+  .res:active{transform:scale(.97);}
+  .res.ate.on{background:var(--ate-bg);border-color:var(--ate);color:#2F6B3E;}
+  .res.touched.on{background:var(--touch-bg);border-color:var(--touch);color:#80590C;}
+  .res.refused.on{background:var(--refuse-bg);border-color:var(--refuse);color:#9A3434;}
+  .btn{border:0;border-radius:14px;min-height:52px;padding:12px 18px;font-weight:700;font-size:16px;background:var(--accent);color:#fff;box-shadow:var(--shadow-sm);transition:.1s;}
+  .btn:active{transform:scale(.98);}
+  .btn:hover{background:var(--accent-dark);}
+  .btn.block{width:100%;}
+  .btn.ghost{background:transparent;color:var(--accent-dark);border:1.5px solid var(--line);box-shadow:none;}
+  .btn.ghost:hover{background:var(--accent-bg);}
+  .btn.danger{background:transparent;color:#B04040;border:1.5px solid #EBC2C2;box-shadow:none;}
+  .btn.danger:hover{background:var(--refuse-bg);}
+  .btn.sm{min-height:40px;padding:8px 13px;font-size:14px;border-radius:11px;}
+  .err{color:#B04040;font-size:14px;font-weight:600;margin-top:10px;min-height:1px;}
+  .edit-banner{background:var(--info-bg);color:#2C557A;border-radius:12px;padding:10px 12px;font-weight:600;font-size:14px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .ac-wrap{position:relative;}
+  .ac{position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1.5px solid var(--line);border-radius:14px;box-shadow:var(--shadow-md);z-index:30;max-height:320px;overflow:auto;}
+  .ac button{display:flex;width:100%;align-items:center;gap:10px;text-align:left;border:0;background:transparent;padding:11px 13px;min-height:48px;border-bottom:1px solid #F4ECE0;font-size:15.5px;}
+  .ac button:last-child{border-bottom:0;}
+  .ac button:hover,.ac button.hl{background:var(--accent-bg);}
+  .ac .tag{margin-left:auto;font-size:11.5px;color:var(--ink-soft);background:#F4ECE0;border-radius:999px;padding:2px 8px;white-space:nowrap;}
+  .ac .tag.me{background:var(--ate-bg);color:#2F6B3E;}
+  .caution{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:12px;padding:9px 12px;font-size:13.5px;color:#6B4D0E;margin-top:8px;}
+  .caution b{color:#5A3E05;}
+
+  .seg{display:flex;background:#F1E6D6;border-radius:14px;padding:4px;gap:4px;margin-bottom:12px;overflow-x:auto;}
+  .seg button{flex:1 1 0;border:0;background:transparent;border-radius:11px;min-height:42px;font-weight:700;font-size:13.5px;color:var(--ink-soft);padding:6px 8px;white-space:nowrap;}
+  .seg button.on{background:#fff;color:var(--ink);box-shadow:var(--shadow-sm);}
+  .seg .n{display:inline-block;min-width:20px;padding:0 5px;border-radius:999px;background:rgba(0,0,0,.06);font-size:11.5px;margin-left:3px;}
+  .daygroup{font-size:13px;font-weight:700;color:var(--ink-soft);margin:14px 4px 6px;text-transform:uppercase;letter-spacing:.04em;}
+  .item{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 13px;margin-bottom:8px;display:flex;gap:11px;align-items:flex-start;}
+  .item .dot{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:20px;flex:0 0 auto;}
+  .dot.ate{background:var(--ate-bg);} .dot.touched{background:var(--touch-bg);} .dot.refused{background:var(--refuse-bg);}
+  .item .body{flex:1 1 auto;min-width:0;}
+  .item .name{font-weight:700;font-size:16px;}
+  .item .meta{font-size:13px;color:var(--ink-soft);margin-top:1px;}
+  .item .notes{font-size:13.5px;margin-top:5px;background:var(--paper);border-radius:9px;padding:6px 9px;white-space:pre-wrap;word-break:break-word;}
+  .item .acts{display:flex;flex-direction:column;gap:6px;flex:0 0 auto;}
+  .iconbtn{border:1.5px solid var(--line);background:var(--paper2);border-radius:11px;min-width:44px;min-height:40px;font-size:13px;font-weight:700;color:var(--ink-soft);padding:4px 9px;}
+  .iconbtn:hover{background:var(--accent-bg);}
+  .iconbtn.del:hover{background:var(--refuse-bg);color:#9A3434;}
+  .pill{display:inline-flex;align-items:center;gap:3px;border-radius:999px;padding:2px 9px;font-size:12.5px;font-weight:700;margin:4px 4px 0 0;}
+  .pill.ate{background:var(--ate-bg);color:#2F6B3E;} .pill.touched{background:var(--touch-bg);color:#80590C;} .pill.refused{background:var(--refuse-bg);color:#9A3434;}
+  .pill.plain{background:#F4ECE0;color:var(--ink-soft);font-weight:600;}
+  .empty{text-align:center;color:var(--ink-soft);padding:26px 12px;font-size:15px;}
+  .empty .big{font-size:38px;display:block;margin-bottom:6px;}
+  .sugg{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow-sm);}
+  .sugg .hd{display:flex;align-items:center;gap:10px;}
+  .sugg .rank{width:32px;height:32px;border-radius:50%;background:var(--accent-bg);color:var(--accent-dark);font-weight:800;display:grid;place-items:center;flex:0 0 auto;font-size:15px;}
+  .sugg .nm{font-weight:800;font-size:17px;}
+  .sugg .why{font-size:14.5px;margin:8px 0 4px;}
+  .sugg .why b{color:var(--accent-dark);}
+  .sugg .flag{font-size:13px;color:var(--ink-soft);margin-top:2px;}
+  .sugg ul.tips{margin:8px 0 10px;padding:0;list-style:none;}
+  .sugg ul.tips li{font-size:13.5px;color:#4E463C;padding:5px 0 5px 24px;position:relative;}
+  .sugg ul.tips li::before{content:"💡";position:absolute;left:0;top:4px;font-size:14px;}
+  .sugg ul.tips li.haz::before{content:"⚠️";}
+  .attrs{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;}
+  .weeknav{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+  .weeknav .arrow{width:52px;height:52px;border-radius:14px;border:1.5px solid var(--line);background:#fff;font-size:22px;font-weight:800;color:var(--accent-dark);flex:0 0 auto;}
+  .weeknav .arrow:hover{background:var(--accent-bg);}
+  .weeknav .wk{flex:1 1 auto;text-align:center;}
+  .weeknav .wk b{display:block;font-size:16px;}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 8px;text-align:center;}
+  .stat .v{font-size:28px;font-weight:800;font-family:var(--font-head);line-height:1.1;}
+  .stat .k{font-size:12px;color:var(--ink-soft);font-weight:600;}
+  .bars .br{display:grid;grid-template-columns:112px 1fr 30px;gap:8px;align-items:center;margin:6px 0;font-size:14px;}
+  .bars .track{background:#F4ECE0;border-radius:999px;height:14px;overflow:hidden;display:flex;}
+  .bars .fill{height:100%;background:var(--accent);border-radius:999px;}
+  .bars .cnt{text-align:right;font-weight:700;}
+  .days .d{display:grid;grid-template-columns:64px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid #F4ECE0;align-items:center;}
+  .days .d:last-child{border-bottom:0;}
+  .days .dl{font-weight:700;font-size:14px;line-height:1.15;}
+  .days .dl span{display:block;font-weight:500;color:var(--ink-soft);font-size:12px;}
+  .days .d.today .dl{color:var(--accent-dark);}
+  .stack{display:flex;height:16px;border-radius:999px;overflow:hidden;background:#F4ECE0;}
+  .stack i{display:block;height:100%;}
+  .stack i.ate{background:var(--ate);} .stack i.touched{background:var(--touch);} .stack i.refused{background:var(--refuse);}
+  .dfoods{font-size:12.5px;color:var(--ink-soft);margin-top:4px;}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-soft);margin-top:8px;}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:-1px;}
+  .banner{border-radius:14px;padding:12px 14px;font-size:14px;margin-bottom:12px;}
+  .banner.demo{background:var(--info-bg);color:#2C557A;border:1px solid #BDD3E6;}
+  .banner.warm{background:var(--accent-bg);color:#7A4020;}
+  .banner.safety{background:var(--warn-bg);border:1px solid var(--warn-line);color:#6B4D0E;}
+  .modal-bg{position:fixed;inset:0;background:rgba(43,38,32,.45);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;}
+  .modal{background:#fff;border-radius:20px;max-width:460px;width:100%;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.25);max-height:90vh;overflow:auto;}
+  .modal h2{font-size:22px;margin-bottom:8px;}
+  .modal p{margin:8px 0;font-size:15px;}
+  .modal .btns{display:flex;flex-direction:column;gap:8px;margin-top:16px;}
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--nav-h) + var(--foot-h) + env(safe-area-inset-bottom) + 12px);background:#2B2620;color:#fff;border-radius:12px;padding:11px 16px;font-size:14.5px;font-weight:600;z-index:90;box-shadow:var(--shadow-md);max-width:92vw;text-align:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+  .toast.show{opacity:1;}
+  .datarow{display:flex;flex-direction:column;gap:9px;}
+  @media (min-width:760px){
+    body{padding-bottom:calc(var(--foot-h) + 20px);}
+    .nav{position:sticky;top:0;bottom:auto;max-width:820px;margin:0 auto 12px;border:1px solid var(--line);border-radius:16px;height:58px;box-shadow:var(--shadow-sm);}
+    .nav button{flex-direction:row;gap:8px;font-size:14.5px;}
+    .nav button .ico{font-size:19px;}
+    .nav button.active{background:var(--accent-bg);border-radius:12px;margin:5px 2px;}
+    .nav button.active::after{display:none;}
+    .navwrap{position:sticky;top:0;z-index:40;background:var(--paper);padding:6px 14px 0;}
+    .toast{bottom:calc(var(--foot-h) + 16px);}
+    .top{padding-top:22px;}
+    .top h1{font-size:26px;}
+    .datarow{flex-direction:row;flex-wrap:wrap;}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .grid2 > .card{margin-bottom:0;}
+    .footer-note{font-size:12.5px;}
+    #suggList{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+    #suggList .sugg{margin:0;}
+    #histList{columns:2;column-gap:12px;}
+    #histList .item,#histList .daygroup{break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="logo" aria-hidden="true">🥕</div>
+  <div>
+    <h1>Toddler Food Explorer</h1>
+    <div class="sub" id="tagline">Tracking tastes, one little try at a time</div>
+  </div>
+</header>
+<div class="navwrap">
+<nav class="nav" id="nav" aria-label="Sections">
+  <button data-view="log" class="active" type="button"><span class="ico">➕</span><span>Log</span></button>
+  <button data-view="next" type="button"><span class="ico">💡</span><span>Try next</span></button>
+  <button data-view="history" type="button"><span class="ico">📖</span><span>History</span></button>
+  <button data-view="week" type="button"><span class="ico">📅</span><span>Week</span></button>
+  <button data-view="data" type="button"><span class="ico">⚙️</span><span>Data</span></button>
+</nav>
+</div>
+<main>
+  <div id="demoBanner" class="banner demo hidden">🧪 <b>Example data is loaded</b> — these logs are made up for demonstration. Remove them in <a href="#" data-goto="data">Data</a> before real use.</div>
+
+  <section class="view active" id="view-log">
+    <div class="card">
+      <div id="editBanner" class="edit-banner hidden">✏️ Editing a saved log <span class="spacer"></span><button class="btn ghost sm" type="button" id="cancelEdit">Cancel</button></div>
+      <h2 id="formTitle">Log an offering</h2>
+      <div class="muted">What did your little one get offered, and how did it go?</div>
+      <label class="lbl" for="fDate">Date</label>
+      <input type="date" id="fDate">
+      <div id="dateHint" class="caution hidden" style="background:var(--info-bg);border-color:#BDD3E6;color:#2C557A;display:flex;align-items:center;gap:8px"></div>
+      <label class="lbl" for="fFood">Food</label>
+      <div class="ac-wrap">
+        <input type="text" id="fFood" placeholder="Start typing, e.g. toast, banana, Weet-Bix" autocomplete="off" autocapitalize="sentences" enterkeyhint="done">
+        <div class="ac hidden" id="acList" role="listbox"></div>
+      </div>
+      <div id="foodCaution"></div>
+      <div class="lbl">Result</div>
+      <div class="results" id="fResult">
+        <button type="button" class="res ate" data-v="ate"><span class="e">😋</span>Ate it</button>
+        <button type="button" class="res touched" data-v="touched"><span class="e">👅</span>Touched or licked</button>
+        <button type="button" class="res refused" data-v="refused"><span class="e">🙅</span>Refused</button>
+      </div>
+      <div class="lbl">Category</div>
+      <div class="chips" id="fCategory"></div>
+      <div class="lbl">Texture</div>
+      <div class="chips" id="fTexture"></div>
+      <div class="lbl">Colour</div>
+      <div class="chips" id="fColour"></div>
+      <div class="lbl">Flavour <span class="opt">(optional)</span></div>
+      <div class="chips" id="fFlavour"></div>
+      <label class="lbl" for="fNotes">Notes <span class="opt">(optional)</span></label>
+      <textarea id="fNotes" placeholder="e.g. served next to toast, sniffed it and put it in their mouth, tired after daycare…"></textarea>
+      <div class="err" id="formErr" role="alert"></div>
+      <div style="margin-top:12px"><button class="btn block" type="button" id="saveBtn">Save offering</button></div>
+    </div>
+    <div class="card" id="todayCard">
+      <h2 style="font-size:18px">Today so far</h2>
+      <div id="todayList"></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-next">
+    <div class="card">
+      <h2>Try next</h2>
+      <div class="muted">Food chaining: small steps from foods your child already eats — same texture and colour first, then food group and flavour. Recently refused foods drop down the list but are never banned.</div>
+    </div>
+    <div id="suggIntro"></div>
+    <div id="suggList"></div>
+    <div class="banner safety small">⚠️ Safety for under-3s — whole nuts, whole grapes, popcorn and hard raw vegetables aren't suggested here. Always cut, grate, squash or cook foods to a safe size and texture, and supervise your child while they eat, seated upright.</div>
+  </section>
+
+  <section class="view" id="view-history">
+    <div class="seg" id="histSeg">
+      <button type="button" data-h="all" class="on">All logs <span class="n" id="nAll">0</span></button>
+      <button type="button" data-h="accepted">Accepted <span class="n" id="nAcc">0</span></button>
+      <button type="button" data-h="working">Working on <span class="n" id="nWork">0</span></button>
+      <button type="button" data-h="refused">Not yet <span class="n" id="nRef">0</span></button>
+    </div>
+    <div id="histHelp" class="muted small" style="margin:0 4px 10px"></div>
+    <div id="histSearchWrap" style="margin-bottom:8px"><input type="search" id="histSearch" placeholder="Search foods or notes…"></div>
+    <div id="histList"></div>
+  </section>
+
+  <section class="view" id="view-week">
+    <div class="weeknav">
+      <button type="button" class="arrow" id="wkPrev" aria-label="Previous week">‹</button>
+      <div class="wk"><b id="wkLabel">This week</b><span class="muted small" id="wkRange"></span></div>
+      <button type="button" class="arrow" id="wkNext" aria-label="Next week">›</button>
+    </div>
+    <div class="stats" id="wkStats"></div>
+    <div class="grid2">
+      <div class="card"><h2 style="font-size:17px">By result</h2><div class="bars" id="wkByResult"></div></div>
+      <div class="card"><h2 style="font-size:17px">By category</h2><div class="muted small">Offerings per food group</div><div class="bars" id="wkByCat"></div></div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h2 style="font-size:17px">Day by day</h2>
+      <div class="days" id="wkDays"></div>
+      <div class="legend"><span><i style="background:var(--ate)"></i>Ate</span><span><i style="background:var(--touch)"></i>Touched/licked</span><span><i style="background:var(--refuse)"></i>Refused</span></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-data">
+    <div class="card">
+      <h2>Your data</h2>
+      <p class="muted" style="margin-top:4px">Everything is saved only in this browser on this device. Nothing is sent anywhere. Export a backup file regularly, or to move the log to another phone.</p>
+      <div class="muted small" id="dataCount" style="margin-bottom:12px"></div>
+      <div class="datarow">
+        <button class="btn" type="button" id="exportBtn">⬇️ Export backup (JSON)</button>
+        <button class="btn ghost" type="button" id="importBtn">⬆️ Import backup (JSON)</button>
+        <input type="file" id="importFile" accept=".json,application/json" class="hidden">
+      </div>
+    </div>
+    <div class="card">
+      <h2 style="font-size:18px">Example data</h2>
+      <p class="muted" style="margin-top:4px">For demos only: loads about two weeks of <b>made-up</b> example logs so you can see how suggestions and the weekly view work. Example logs are marked and can be removed in one tap.</p>
+      <div class="datarow">
+        <button class="btn ghost" type="button" id="loadExample">🧪 Load example data (demo)</button>
+        <button class="btn ghost hidden" type="button" id="removeExample">Remove example data</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2 style="font-size:18px">Start fresh</h2>
+      <p class="muted" style="margin-top:4px">Permanently deletes every log on this device. Export a backup first if you might want it later.</p>
+      <button class="btn danger" type="button" id="clearBtn">🗑️ Clear all data</button>
+    </div>
+    <div class="card">
+      <h2 style="font-size:18px">About</h2>
+      <p class="small" style="margin:6px 0">Offering a food many times — even when it's only touched, sniffed or licked — is how many toddlers slowly come to accept it. Keep it low-pressure: a small amount next to a food they already like, and no pressure to eat.</p>
+      <p class="small" style="margin:6px 0"><b>This is a tracker, not medical advice.</b> Talk to your GP, child health nurse or a paediatric dietitian about feeding concerns.</p>
+      <p class="small" style="margin:6px 0">Some foods need extra care for children under 3: whole nuts, whole grapes, popcorn and hard raw vegetables or fruit. Quarter grapes and cherry tomatoes, grate or steam carrot and apple, spread nut butters thinly, and always supervise.</p>
+      <button class="btn ghost sm" type="button" id="showIntro">Show welcome note again</button>
+    </div>
+  </section>
+</main>
+<div class="footer-note" id="footerNote">This is a tracker, not medical advice. Talk to your GP, child health nurse or a paediatric dietitian about feeding concerns.</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div id="modalRoot"></div>
+<script>
+(function(){
+'use strict';
+const LS_KEY = 'toddlerFoodExplorer.v1';
+const APP_ID = 'toddler-food-explorer';
+const CATS = [['fruit','Fruit','🍎'],['veg','Vegetable','🥦'],['grain','Grain / bread','🍞'],['dairy','Dairy','🧀'],['protein','Protein / meat','🍗'],['egg','Egg','🥚'],['legume','Legume','🫘'],['snack','Snack','🍪'],['other','Other','🍽️']];
+const TEXTURES = [['puree','Puree'],['smooth','Smooth'],['soft','Soft / mashed'],['crunchy','Crunchy'],['chewy','Chewy'],['lumpy','Mixed / lumpy'],['liquid','Liquid']];
+const COLOURS = [['beige','Beige / white','#EFE3C8'],['yellow','Yellow / orange','#F2B544'],['red','Red','#D9534F'],['green','Green','#6BAA5A'],['brown','Brown','#8B5E3C'],['mixed','Mixed','linear-gradient(135deg,#F2B544 0 33%,#D9534F 33% 66%,#6BAA5A 66%)']];
+const FLAVOURS = [['mild','Mild'],['sweet','Sweet'],['savoury','Savoury'],['sour','Sour'],['strong','Strong']];
+const RESULTS = {ate:{label:'Ate it',e:'😋'},touched:{label:'Touched / licked',e:'👅'},refused:{label:'Refused',e:'🙅'}};
+const lab = (list,k)=>{const f=list.find(x=>x[0]===k);return f?f[1]:'';};
+const catLabel=k=>lab(CATS,k), texLabel=k=>lab(TEXTURES,k), colLabel=k=>lab(COLOURS,k), flavLabel=k=>lab(FLAVOURS,k);
+const TEX_WORD = {puree:'puree',smooth:'smooth',soft:'soft',crunchy:'crunchy',chewy:'chewy',lumpy:'lumpy',liquid:'liquid'};
+const COL_WORD = {beige:'beige',yellow:'yellow/orange',red:'red',green:'green',brown:'brown',mixed:'mixed colours'};
+const TEX_NEAR = {puree:['smooth'],smooth:['puree','soft'],soft:['smooth','lumpy'],lumpy:['soft'],crunchy:['chewy'],chewy:['crunchy','soft'],liquid:['smooth']};
+
+/* Starter library: c=category t=texture col=colour f=flavour; hz=safety note; ns=never suggest */
+const LIB = [
+  {n:'Banana',c:'fruit',t:'soft',col:'yellow',f:'sweet'},
+  {n:'Mashed banana',c:'fruit',t:'puree',col:'yellow',f:'sweet'},
+  {n:'Apple puree',c:'fruit',t:'puree',col:'beige',f:'sweet'},
+  {n:'Apple, grated',c:'fruit',t:'soft',col:'beige',f:'sweet',hz:'Raw apple pieces are a choking risk under 3 — grate it, slice paper-thin or steam until soft.'},
+  {n:'Pear, ripe',c:'fruit',t:'soft',col:'beige',f:'sweet'},
+  {n:'Rockmelon',c:'fruit',t:'soft',col:'yellow',f:'sweet'},
+  {n:'Watermelon',c:'fruit',t:'soft',col:'red',f:'sweet',hz:'Remove seeds and cut into small pieces or thin sticks.'},
+  {n:'Strawberries',c:'fruit',t:'soft',col:'red',f:'sweet',hz:'Cut into small pieces or quarters.'},
+  {n:'Blueberries (squashed)',c:'fruit',t:'soft',col:'mixed',f:'sweet',hz:'Squash or halve blueberries for under-3s.'},
+  {n:'Grapes (quartered)',c:'fruit',t:'soft',col:'green',f:'sweet',hz:'Whole grapes are a serious choking hazard — always quarter them lengthways.'},
+  {n:'Mandarin segments',c:'fruit',t:'soft',col:'yellow',f:'sweet',hz:'Remove pips and cut segments into small pieces.'},
+  {n:'Mango',c:'fruit',t:'soft',col:'yellow',f:'sweet'},
+  {n:'Avocado',c:'fruit',t:'smooth',col:'green',f:'mild'},
+  {n:'Kiwi fruit',c:'fruit',t:'soft',col:'green',f:'sour'},
+  {n:'Tinned peaches',c:'fruit',t:'soft',col:'yellow',f:'sweet'},
+  {n:'Sultanas',c:'fruit',t:'chewy',col:'brown',f:'sweet',hz:'Dried fruit is sticky — offer a few at a time, chopped or soaked, while seated.'},
+  {n:'Pumpkin mash',c:'veg',t:'soft',col:'yellow',f:'sweet'},
+  {n:'Sweet potato wedges',c:'veg',t:'soft',col:'yellow',f:'sweet'},
+  {n:'Mashed potato',c:'veg',t:'smooth',col:'beige',f:'mild'},
+  {n:'Hot chips',c:'veg',t:'crunchy',col:'beige',f:'savoury'},
+  {n:'Potato gems',c:'veg',t:'crunchy',col:'beige',f:'savoury'},
+  {n:'Carrot, steamed sticks',c:'veg',t:'soft',col:'yellow',f:'sweet'},
+  {n:'Carrot, raw (grated)',c:'veg',t:'crunchy',col:'yellow',f:'sweet',hz:'Hard raw carrot is a choking hazard under 3 — grate it finely or steam it; never raw sticks or rounds.'},
+  {n:'Corn kernels',c:'veg',t:'chewy',col:'yellow',f:'sweet'},
+  {n:'Corn cob (steamed)',c:'veg',t:'chewy',col:'yellow',f:'sweet'},
+  {n:'Peas (squashed)',c:'veg',t:'soft',col:'green',f:'mild',hz:'Lightly squash peas for younger toddlers.'},
+  {n:'Broccoli, steamed',c:'veg',t:'soft',col:'green',f:'mild'},
+  {n:'Cauliflower, steamed',c:'veg',t:'soft',col:'beige',f:'mild'},
+  {n:'Zucchini',c:'veg',t:'soft',col:'green',f:'mild'},
+  {n:'Capsicum, roasted',c:'veg',t:'soft',col:'red',f:'sweet'},
+  {n:'Capsicum, raw strips',c:'veg',t:'crunchy',col:'red',f:'sweet',hz:'Raw capsicum can be tough — cut very thin strips or roast it until soft.'},
+  {n:'Cucumber sticks',c:'veg',t:'crunchy',col:'green',f:'mild',hz:'Peel and cut into thin sticks, not rounds.'},
+  {n:'Cherry tomatoes (quartered)',c:'veg',t:'soft',col:'red',f:'sour',hz:'Quarter cherry tomatoes — whole ones are a choking hazard.'},
+  {n:'Green beans, steamed',c:'veg',t:'soft',col:'green',f:'mild'},
+  {n:'Mushrooms, cooked',c:'veg',t:'chewy',col:'brown',f:'savoury'},
+  {n:'Beetroot, roasted',c:'veg',t:'soft',col:'red',f:'sweet'},
+  {n:'Toast',c:'grain',t:'crunchy',col:'beige',f:'mild'},
+  {n:'Vegemite toast',c:'grain',t:'crunchy',col:'brown',f:'strong'},
+  {n:'Weet-Bix',c:'grain',t:'soft',col:'brown',f:'mild'},
+  {n:'Porridge',c:'grain',t:'smooth',col:'beige',f:'mild'},
+  {n:'Rice',c:'grain',t:'soft',col:'beige',f:'mild'},
+  {n:'Plain pasta',c:'grain',t:'soft',col:'beige',f:'mild'},
+  {n:'Pasta with tomato sauce',c:'grain',t:'lumpy',col:'red',f:'savoury'},
+  {n:'Crumpet',c:'grain',t:'chewy',col:'beige',f:'mild'},
+  {n:'Pikelets',c:'grain',t:'soft',col:'beige',f:'sweet'},
+  {n:'Pancakes',c:'grain',t:'soft',col:'beige',f:'sweet'},
+  {n:'Rice crackers',c:'grain',t:'crunchy',col:'beige',f:'savoury'},
+  {n:'Plain crackers',c:'grain',t:'crunchy',col:'beige',f:'savoury'},
+  {n:'Corn thins',c:'grain',t:'crunchy',col:'yellow',f:'mild'},
+  {n:'Soft bread roll',c:'grain',t:'chewy',col:'beige',f:'mild'},
+  {n:'Wrap / tortilla',c:'grain',t:'chewy',col:'beige',f:'mild'},
+  {n:'Fried rice',c:'grain',t:'lumpy',col:'mixed',f:'savoury'},
+  {n:'Yoghurt, plain',c:'dairy',t:'smooth',col:'beige',f:'sour'},
+  {n:'Yoghurt, vanilla',c:'dairy',t:'smooth',col:'beige',f:'sweet'},
+  {n:'Cheese slice',c:'dairy',t:'chewy',col:'yellow',f:'mild'},
+  {n:'Cheese stick',c:'dairy',t:'chewy',col:'yellow',f:'mild',hz:'Cut cheese sticks lengthways into thin strips.'},
+  {n:'Grated cheese',c:'dairy',t:'soft',col:'yellow',f:'mild'},
+  {n:'Cottage cheese',c:'dairy',t:'lumpy',col:'beige',f:'mild'},
+  {n:'Milk',c:'dairy',t:'liquid',col:'beige',f:'mild'},
+  {n:'Custard',c:'dairy',t:'smooth',col:'yellow',f:'sweet'},
+  {n:'Cheese toastie',c:'dairy',t:'crunchy',col:'yellow',f:'savoury'},
+  {n:'Chicken nuggets',c:'protein',t:'crunchy',col:'beige',f:'savoury'},
+  {n:'Shredded chicken',c:'protein',t:'chewy',col:'beige',f:'mild'},
+  {n:'Fish fingers',c:'protein',t:'crunchy',col:'beige',f:'mild',hz:'Check for bones and break into small pieces.'},
+  {n:'Salmon, flaked',c:'protein',t:'soft',col:'red',f:'savoury',hz:'Check carefully for bones.'},
+  {n:'Tuna',c:'protein',t:'soft',col:'beige',f:'strong'},
+  {n:'Meatballs',c:'protein',t:'soft',col:'brown',f:'savoury',hz:'Cut into small pieces.'},
+  {n:'Spaghetti bolognese',c:'protein',t:'lumpy',col:'red',f:'savoury'},
+  {n:'Sausage (cut lengthways)',c:'protein',t:'chewy',col:'brown',f:'savoury',hz:'Sausage rounds are a choking hazard — remove skin, cut lengthways then into small pieces.'},
+  {n:'Ham',c:'protein',t:'chewy',col:'red',f:'savoury'},
+  {n:'Scrambled egg',c:'egg',t:'soft',col:'yellow',f:'mild'},
+  {n:'Boiled egg',c:'egg',t:'soft',col:'mixed',f:'mild'},
+  {n:'Omelette strips',c:'egg',t:'soft',col:'yellow',f:'mild'},
+  {n:'French toast',c:'egg',t:'soft',col:'yellow',f:'sweet'},
+  {n:'Baked beans',c:'legume',t:'lumpy',col:'red',f:'savoury'},
+  {n:'Hummus',c:'legume',t:'smooth',col:'beige',f:'savoury'},
+  {n:'Dhal / lentils',c:'legume',t:'lumpy',col:'yellow',f:'savoury'},
+  {n:'Chickpeas (squashed)',c:'legume',t:'soft',col:'beige',f:'mild',hz:'Squash chickpeas flat for under-3s.'},
+  {n:'Tofu',c:'legume',t:'soft',col:'beige',f:'mild'},
+  {n:'Peanut butter (thinly spread)',c:'legume',t:'smooth',col:'brown',f:'savoury',hz:'Spread nut butters thinly on toast — never in lumps or spoonfuls.'},
+  {n:'Arrowroot biscuits',c:'snack',t:'crunchy',col:'beige',f:'sweet'},
+  {n:'Baby puffs / corn puffs',c:'snack',t:'crunchy',col:'yellow',f:'mild'},
+  {n:'Yoghurt melts',c:'snack',t:'crunchy',col:'beige',f:'sweet'},
+  {n:'Veggie straws',c:'snack',t:'crunchy',col:'mixed',f:'savoury'},
+  {n:'Pretzels',c:'snack',t:'crunchy',col:'brown',f:'savoury'},
+  {n:'Tiny Teddy biscuits',c:'snack',t:'crunchy',col:'brown',f:'sweet'},
+  {n:'Banana bread',c:'snack',t:'soft',col:'brown',f:'sweet'},
+  {n:'Muffin',c:'snack',t:'soft',col:'beige',f:'sweet'},
+  {n:'Fruit smoothie',c:'other',t:'liquid',col:'mixed',f:'sweet'},
+  {n:'Pumpkin soup',c:'other',t:'smooth',col:'yellow',f:'savoury'},
+  {n:'Jelly',c:'other',t:'smooth',col:'red',f:'sweet'},
+  {n:'Whole grapes',c:'fruit',t:'soft',col:'green',f:'sweet',ns:true,hz:'Whole grapes are a serious choking hazard for under-3s — quarter them lengthways.'},
+  {n:'Whole nuts',c:'snack',t:'crunchy',col:'brown',f:'savoury',ns:true,hz:'Whole nuts are not recommended for children under 3 (choking risk). Use smooth nut butter spread thinly or finely ground nuts instead.'},
+  {n:'Popcorn',c:'snack',t:'crunchy',col:'beige',f:'savoury',ns:true,hz:'Popcorn is a choking hazard for children under 3 and is not suggested.'},
+];
+const HAZ_RX = [
+  {rx:/\b(whole\s+)?(nuts?|almonds?|cashews?|peanuts?|macadamias?|walnuts?|pecans?|pistachios?|hazelnuts?)\b/i, not:/butter|paste|ground|meal|spread|milk/i, ns:true, hz:'Whole nuts are a choking hazard for under-3s — use smooth nut butter spread thinly, or finely ground nuts.'},
+  {rx:/popcorn/i, ns:true, hz:'Popcorn is a choking hazard for children under 3.'},
+  {rx:/\bgrapes?\b/i, not:/quarter|halved|cut/i, ns:true, hz:'Whole grapes are a serious choking hazard — quarter them lengthways.'},
+  {rx:/\b(raw\s+carrot|carrot\s+sticks?|raw\s+apple|apple\s+slices?|celery)\b/i, hz:'Hard raw fruit and veg are a choking hazard under 3 — grate, slice thinly or steam until soft.'},
+  {rx:/\b(hard\s+lollies|lollies|marshmallows?)\b/i, hz:'Hard or very sticky lollies are a choking hazard for under-3s.'},
+];
+const key = s => String(s||'').trim().toLowerCase().replace(/\s+/g,' ');
+const LIBMAP = new Map(LIB.map(x=>[key(x.n),x]));
+
+/* ================= state ================= */
+function freshState(){return {version:1,logs:[],settings:{}};}
+function validLog(l){return !!(l && typeof l==='object' && typeof l.food==='string' && l.food.trim() && /^\d{4}-\d{2}-\d{2}$/.test(l.date||'') && RESULTS[l.result]);}
+function uid(){return 'l'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
+function normLog(l){
+  return {id:String(l.id||uid()),date:l.date,food:String(l.food).trim().replace(/\s+/g,' ').slice(0,80),
+    category:CATS.some(c=>c[0]===l.category)?l.category:'other',
+    texture:TEXTURES.some(c=>c[0]===l.texture)?l.texture:'',
+    colour:COLOURS.some(c=>c[0]===l.colour)?l.colour:'',
+    flavour:FLAVOURS.some(c=>c[0]===l.flavour)?l.flavour:'',
+    result:l.result,notes:String(l.notes||'').slice(0,1000),created:Number(l.created)||Date.now(),example:!!l.example};
+}
+function load(){
+  try{
+    let raw = localStorage.getItem(LS_KEY);
+    if(!raw){
+      // Migrate data saved by earlier versions of this app under a differently named *FoodExplorer.v1 key (old key is left in place).
+      for(let i=0;i<localStorage.length;i++){
+        const k=localStorage.key(i);
+        if(k!==LS_KEY && /^[A-Za-z]+FoodExplorer\.v1$/.test(k)){ const v=localStorage.getItem(k); if(v){ raw=v; try{localStorage.setItem(LS_KEY,v);}catch(e){} break; } }
+      }
+    }
+    if(!raw) return freshState();
+    const s = JSON.parse(raw);
+    if(s && Array.isArray(s.logs)) return {version:1,logs:s.logs.filter(validLog).map(normLog),settings:(s.settings&&typeof s.settings==='object')?s.settings:{}};
+  }catch(e){ console.warn('Could not read saved data', e); }
+  return freshState();
+}
+let state = load();
+function save(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+  catch(e){ toast('⚠️ Could not save — storage may be full or disabled'); }
+}
+
+/* ================= dates ================= */
+const pad = n=>String(n).padStart(2,'0');
+const ymd = d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parse = s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);};
+const todayStr = ()=>ymd(new Date());
+const addDays = (s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return ymd(d);};
+const dayDiff = (a,b)=>{const A=parse(a),B=parse(b);return Math.round((Date.UTC(B.getFullYear(),B.getMonth(),B.getDate())-Date.UTC(A.getFullYear(),A.getMonth(),A.getDate()))/86400000);};
+const WD_S=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], WD_L=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MON_S=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmt(s,o){ // Australian style: "Tue 29 Sep" / "Tuesday 29 Sep 2026"
+  o=o||{weekday:'short',day:'numeric',month:'short'}; const d=parse(s); const out=[];
+  if(o.weekday) out.push((o.weekday==='long'?WD_L:WD_S)[d.getDay()]);
+  if(o.day) out.push(d.getDate());
+  if(o.month) out.push(MON_S[d.getMonth()]);
+  if(o.year) out.push(d.getFullYear());
+  return out.join(' ');
+}
+function relDay(s){
+  const n = dayDiff(s,todayStr());
+  if(n===0) return 'today'; if(n===1) return 'yesterday'; if(n>1 && n<7) return n+' days ago';
+  return fmt(s,{day:'numeric',month:'short'});
+}
+function mondayOf(s){const d=parse(s);const dow=(d.getDay()+6)%7;d.setDate(d.getDate()-dow);return ymd(d);}
+
+/* ================= helpers ================= */
+const $ = s=>document.querySelector(s);
+const $$ = s=>Array.from(document.querySelectorAll(s));
+const esc = s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let toastT;
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600);}
+function hazardFor(name){
+  const k = key(name); if(!k) return null;
+  const lib = LIBMAP.get(k);
+  if(lib) return lib.hz ? {hz:lib.hz, ns:!!lib.ns} : null;
+  for(const h of HAZ_RX){ if(h.rx.test(name) && !(h.not && h.not.test(name))) return {hz:h.hz, ns:!!h.ns}; }
+  return null;
+}
+const byDateDesc = (a,b)=> a.date<b.date?1:a.date>b.date?-1:(b.created-a.created);
+function sortedLogs(){return state.logs.slice().sort(byDateDesc);}
+function foodStats(){
+  const m = new Map();
+  const logs = state.logs.slice().sort((a,b)=>-byDateDesc(a,b)); // oldest first; latest wins name/attrs
+  for(const l of logs){
+    const k = key(l.food);
+    let s = m.get(k);
+    if(!s){ s={key:k,name:l.food,ate:0,touched:0,refused:0,total:0,first:l.date,last:l.date,lastRefused:null,lastAte:null,attrs:{}}; m.set(k,s); }
+    s[l.result]++; s.total++; s.name=l.food; s.last=l.date;
+    if(l.result==='refused') s.lastRefused=l.date;
+    if(l.result==='ate') s.lastAte=l.date;
+    s.attrs={c:l.category,t:l.texture,col:l.colour,f:l.flavour};
+  }
+  return m;
+}
+
+/* ================= form chips ================= */
+const form = {result:'',category:'',texture:'',colour:'',flavour:'',editingId:null};
+function buildChips(el, list, field, optional){
+  el.innerHTML = list.map(x=>{
+    const pre = field==='colour' ? `<span class="sw" style="background:${x[2]}"></span>` : (field==='category'?`<span aria-hidden="true">${x[2]}</span>`:'');
+    return `<button type="button" class="chip" data-v="${x[0]}" aria-pressed="false">${pre}${esc(x[1])}</button>`;
+  }).join('');
+  el.addEventListener('click',e=>{
+    const b = e.target.closest('.chip'); if(!b) return;
+    form[field] = (form[field]===b.dataset.v && optional) ? '' : b.dataset.v;
+    syncChips(); $('#formErr').textContent='';
+  });
+}
+function syncChips(){
+  for(const [id,field] of [['#fCategory','category'],['#fTexture','texture'],['#fColour','colour'],['#fFlavour','flavour'],['#fResult','result']]){
+    $$(id+' [data-v]').forEach(b=>{const on=b.dataset.v===form[field];b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on));});
+  }
+}
+buildChips($('#fCategory'),CATS,'category');
+buildChips($('#fTexture'),TEXTURES,'texture');
+buildChips($('#fColour'),COLOURS,'colour');
+buildChips($('#fFlavour'),FLAVOURS,'flavour',true);
+$('#fResult').addEventListener('click',e=>{const b=e.target.closest('.res');if(!b)return;form.result=b.dataset.v;syncChips();$('#formErr').textContent='';});
+function applyAttrs(a){
+  if(!a) return;
+  if(a.c) form.category=a.c; if(a.t) form.texture=a.t; if(a.col) form.colour=a.col; form.flavour=a.f||'';
+  syncChips();
+}
+function attrsForName(name){
+  const k = key(name);
+  const st = foodStats().get(k);
+  if(st) return st.attrs;
+  const lib = LIBMAP.get(k);
+  return lib ? {c:lib.c,t:lib.t,col:lib.col,f:lib.f} : null;
+}
+function updateDateHint(){
+  const v=$('#fDate').value, t=todayStr(), el=$('#dateHint');
+  if(!v || v===t){ el.classList.add('hidden'); return; }
+  el.innerHTML = `<span style="flex:1 1 auto">📅 Logging for <b>${esc(fmt(v))}</b>${v>t?' (a future date)':''}, not today.</span><button type="button" class="btn ghost sm" id="useToday">Use today</button>`;
+  el.classList.remove('hidden');
+}
+$('#fDate').addEventListener('input',updateDateHint);
+$('#fDate').addEventListener('change',updateDateHint);
+document.addEventListener('click',e=>{ if(e.target.id==='useToday'){ $('#fDate').value=todayStr(); updateDateHint(); }});
+function updateCaution(){
+  const h = hazardFor($('#fFood').value);
+  $('#foodCaution').innerHTML = h ? `<div class="caution">⚠️ <b>Choking caution:</b> ${esc(h.hz)}</div>` : '';
+}
+
+/* ================= autocomplete ================= */
+const acEl = $('#acList'), foodIn = $('#fFood');
+let acItems = [], acHi = -1;
+function acSearch(q){
+  const k = key(q); if(!k) return [];
+  const st = foodStats(); const out=[], seen=new Set();
+  const score = n=>{const x=key(n); return x.startsWith(k)?0:(x.split(/[\s,(/\-]+/).some(w=>w.startsWith(k))?1:(x.includes(k)?2:9));};
+  const mine = [...st.values()].map(s=>({name:s.name,mine:true,s,sc:score(s.name)})).filter(x=>x.sc<9).sort((a,b)=>a.sc-b.sc||b.s.total-a.s.total);
+  const lib = LIB.map(l=>({name:l.n,lib:l,sc:score(l.n)})).filter(x=>x.sc<9).sort((a,b)=>a.sc-b.sc||a.name.localeCompare(b.name));
+  for(const x of mine.concat(lib)){ const kk=key(x.name); if(!seen.has(kk)){seen.add(kk);out.push(x);} }
+  return out.slice(0,8);
+}
+function acRender(){
+  acItems = acSearch(foodIn.value);
+  if(!acItems.length || (acItems.length===1 && key(acItems[0].name)===key(foodIn.value))){acEl.classList.add('hidden');acEl.innerHTML='';return;}
+  acEl.innerHTML = acItems.map((x,i)=>{
+    const tag = x.mine ? `<span class="tag me">logged ${x.s.total}×</span>` : `<span class="tag">${esc(catLabel(x.lib.c))}</span>`;
+    return `<button type="button" role="option" data-i="${i}" class="${i===acHi?'hl':''}">${esc(x.name)}${tag}</button>`;
+  }).join('');
+  acEl.classList.remove('hidden');
+}
+function acPick(i){
+  const x = acItems[i]; if(!x) return;
+  foodIn.value = x.name;
+  applyAttrs(x.mine ? x.s.attrs : {c:x.lib.c,t:x.lib.t,col:x.lib.col,f:x.lib.f});
+  acEl.classList.add('hidden'); acHi=-1; updateCaution(); $('#formErr').textContent='';
+}
+foodIn.addEventListener('input',()=>{acHi=-1;acRender();updateCaution();});
+foodIn.addEventListener('focus',()=>{if(foodIn.value)acRender();});
+foodIn.addEventListener('keydown',e=>{
+  if(acEl.classList.contains('hidden')) return;
+  if(e.key==='ArrowDown'){acHi=Math.min(acItems.length-1,acHi+1);acRender();e.preventDefault();}
+  else if(e.key==='ArrowUp'){acHi=Math.max(0,acHi-1);acRender();e.preventDefault();}
+  else if(e.key==='Enter'){ if(acHi>=0){acPick(acHi);e.preventDefault();} }
+  else if(e.key==='Escape'){acEl.classList.add('hidden');}
+});
+acEl.addEventListener('mousedown',e=>e.preventDefault());
+acEl.addEventListener('click',e=>{const b=e.target.closest('button[data-i]');if(b)acPick(+b.dataset.i);});
+foodIn.addEventListener('blur',()=>{
+  setTimeout(()=>acEl.classList.add('hidden'),150);
+  const a = attrsForName(foodIn.value);
+  if(a && !form.category && !form.texture && !form.colour) applyAttrs(a);
+});
+
+/* ================= save / edit / delete ================= */
+function resetForm(keepDate){
+  const d = keepDate ? $('#fDate').value : todayStr();
+  Object.assign(form,{result:'',category:'',texture:'',colour:'',flavour:'',editingId:null});
+  $('#fDate').value = d || todayStr(); foodIn.value=''; $('#fNotes').value=''; $('#formErr').textContent='';
+  $('#editBanner').classList.add('hidden'); $('#formTitle').textContent='Log an offering'; $('#saveBtn').textContent='Save offering';
+  syncChips(); updateCaution(); updateDateHint();
+}
+function saveForm(){
+  const food = foodIn.value.trim().replace(/\s+/g,' ');
+  const date = $('#fDate').value;
+  const miss = [];
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) miss.push('date');
+  if(!food) miss.push('food name');
+  if(!form.result) miss.push('result');
+  if(!form.category) miss.push('category');
+  if(!form.texture) miss.push('texture');
+  if(!form.colour) miss.push('colour');
+  if(miss.length){ $('#formErr').textContent='Please add: '+miss.join(', ')+'.'; return; }
+  const data = {date,food,category:form.category,texture:form.texture,colour:form.colour,flavour:form.flavour,result:form.result,notes:$('#fNotes').value.trim()};
+  if(form.editingId){
+    const l = state.logs.find(x=>x.id===form.editingId);
+    if(l) Object.assign(l,normLog({...l,...data}));
+    save(); toast('✏️ Log updated'); resetForm(); renderAll(); showView('history');
+    return;
+  }
+  const prev = foodStats().get(key(food));
+  state.logs.push(normLog({...data,id:uid(),created:Date.now()}));
+  save();
+  let msg;
+  if(form.result==='ate' && (!prev || prev.ate===0)) msg='🎉 New accepted food: '+food+'!';
+  else if(form.result==='ate') msg='😋 Saved — nice one!';
+  else if(form.result==='touched') msg='👅 Saved — touching counts. Keep offering!';
+  else msg='🙅 Saved — every exposure still helps.';
+  toast(msg);
+  resetForm(true); renderAll();
+}
+$('#saveBtn').addEventListener('click',saveForm);
+$('#cancelEdit').addEventListener('click',()=>{resetForm();toast('Edit cancelled');});
+function startEdit(id){
+  const l = state.logs.find(x=>x.id===id); if(!l) return;
+  Object.assign(form,{result:l.result,category:l.category,texture:l.texture,colour:l.colour,flavour:l.flavour,editingId:id});
+  $('#fDate').value=l.date; foodIn.value=l.food; $('#fNotes').value=l.notes||'';
+  $('#editBanner').classList.remove('hidden'); $('#formTitle').textContent='Edit log'; $('#saveBtn').textContent='Save changes';
+  $('#formErr').textContent='';
+  syncChips(); updateCaution(); updateDateHint(); showView('log'); window.scrollTo({top:0,behavior:'smooth'});
+}
+function deleteLog(id){
+  const l = state.logs.find(x=>x.id===id); if(!l) return;
+  if(!confirm(`Delete this log?\n\n${l.food} — ${RESULTS[l.result].label} (${fmt(l.date)})`)) return;
+  state.logs = state.logs.filter(x=>x.id!==id);
+  if(form.editingId===id) resetForm();
+  save(); renderAll(); toast('🗑️ Log deleted');
+}
+function prefill(name){
+  resetForm();
+  foodIn.value = name; applyAttrs(attrsForName(name)); updateCaution();
+  showView('log'); window.scrollTo({top:0,behavior:'smooth'});
+  toast('Pick how it went, then Save');
+}
+
+/* ================= shared render ================= */
+function logItem(l){
+  const attrs = [catLabel(l.category), texLabel(l.texture), colLabel(l.colour), flavLabel(l.flavour)].filter(Boolean).join(' · ');
+  return `<div class="item log-item" data-id="${esc(l.id)}">
+    <div class="dot ${l.result}" title="${RESULTS[l.result].label}">${RESULTS[l.result].e}</div>
+    <div class="body"><div class="name">${esc(l.food)}${l.example?' <span class="pill plain">example</span>':''}</div>
+      <div class="meta"><b>${RESULTS[l.result].label}</b></div>
+      <div class="meta">${esc(attrs)}</div>
+      ${l.notes?`<div class="notes">${esc(l.notes)}</div>`:''}</div>
+    <div class="acts"><button type="button" class="iconbtn" data-edit="${esc(l.id)}" aria-label="Edit ${esc(l.food)}">Edit</button>
+      <button type="button" class="iconbtn del" data-del="${esc(l.id)}" aria-label="Delete ${esc(l.food)}">Delete</button></div>
+  </div>`;
+}
+document.addEventListener('click',e=>{
+  const ed = e.target.closest('[data-edit]'); if(ed){startEdit(ed.dataset.edit);return;}
+  const dl = e.target.closest('[data-del]'); if(dl){deleteLog(dl.dataset.del);return;}
+  const pf = e.target.closest('[data-prefill]'); if(pf){prefill(pf.dataset.prefill);return;}
+  const gt = e.target.closest('[data-goto]'); if(gt){e.preventDefault();showView(gt.dataset.goto);return;}
+});
+function renderToday(){
+  const t = todayStr();
+  const logs = sortedLogs().filter(l=>l.date===t);
+  $('#todayList').innerHTML = logs.length ? logs.map(logItem).join('') : `<div class="muted small" style="padding:6px 0">Nothing logged today yet. Every offering counts — even a refusal is an exposure.</div>`;
+}
+
+/* ================= history ================= */
+let histMode='all';
+$('#histSeg').addEventListener('click',e=>{const b=e.target.closest('button[data-h]');if(!b)return;histMode=b.dataset.h;renderHistory();});
+$('#histSearch').addEventListener('input',()=>renderHistory());
+function foodCard(s, kind){
+  const pills = `<span class="pill ate">😋 ${s.ate} ate</span><span class="pill touched">👅 ${s.touched} touched</span><span class="pill refused">🙅 ${s.refused} refused</span>`;
+  const a = s.attrs;
+  const attrs = [catLabel(a.c),texLabel(a.t),colLabel(a.col)].filter(Boolean).join(' · ');
+  let extra='';
+  if(kind==='working') extra = `<div class="meta" style="margin-top:4px">Offered ${s.total}× — keep it on the plate, no pressure.</div>`;
+  if(kind==='refused') extra = `<div class="meta" style="margin-top:4px">Offered ${s.total}×. Many toddlers need 10–15+ exposures before accepting a food.</div>`;
+  const dotCls = kind==='accepted'?'ate':kind==='working'?'touched':'refused';
+  const ico = kind==='accepted'?'⭐':kind==='working'?'👅':'⏳';
+  return `<div class="item food-card" data-food="${esc(s.name)}"><div class="dot ${dotCls}">${ico}</div>
+    <div class="body"><div class="name">${esc(s.name)}</div><div class="meta">${esc(attrs)}</div>
+    <div class="meta">Last tried ${esc(relDay(s.last))}${kind==='accepted'&&s.lastAte&&s.lastAte!==s.last?' · last ate '+esc(relDay(s.lastAte)):''}</div>
+    <div>${pills}</div>${extra}</div>
+    <div class="acts"><button type="button" class="iconbtn" data-prefill="${esc(s.name)}" aria-label="Log ${esc(s.name)} again">Log</button></div></div>`;
+}
+function renderHistory(){
+  const st = [...foodStats().values()];
+  const lastDesc = (a,b)=> a.last<b.last?1:a.last>b.last?-1:0;
+  const acc = st.filter(s=>s.ate>0).sort((a,b)=>lastDesc(a,b)||b.ate-a.ate);
+  const work = st.filter(s=>s.ate===0&&s.touched>0).sort(lastDesc);
+  const ref = st.filter(s=>s.ate===0&&s.touched===0).sort(lastDesc);
+  $('#nAll').textContent=state.logs.length; $('#nAcc').textContent=acc.length; $('#nWork').textContent=work.length; $('#nRef').textContent=ref.length;
+  $$('#histSeg button').forEach(b=>b.classList.toggle('on',b.dataset.h===histMode));
+  const qRaw = $('#histSearch').value, q = key(qRaw);
+  const match = txt=>!q || key(txt).includes(q);
+  const help = {all:'Every offering, newest first. Tap Edit to fix a mistake.',accepted:'Foods your child has eaten at least once — their safe foods to chain from.',working:'Touched or licked but not eaten yet. Repeated, relaxed exposure matters — keep offering these.',refused:'Offered but only refused so far. Not a “no forever” — try again in a few days, next to a safe food.'};
+  $('#histHelp').textContent = help[histMode];
+  let html='';
+  if(histMode==='all'){
+    const logs = sortedLogs().filter(l=>match(l.food+' '+(l.notes||'')));
+    let cur='';
+    for(const l of logs){ if(l.date!==cur){cur=l.date;html+=`<div class="daygroup">${esc(fmt(l.date,{weekday:'long',day:'numeric',month:'short',year:'numeric'}))}</div>`;} html+=logItem(l); }
+    if(!logs.length) html = q ? `<div class="empty">No logs match “${esc(qRaw)}”.</div>` : `<div class="empty"><span class="big">📖</span>No logs yet. Head to <a href="#" data-goto="log">Log</a> to add the first one.</div>`;
+  } else {
+    const list = (histMode==='accepted'?acc:histMode==='working'?work:ref).filter(s=>match(s.name));
+    html = list.map(s=>foodCard(s,histMode)).join('');
+    if(!list.length){
+      const msg = {accepted:['⭐','No accepted foods yet — log a food your child eats (even an old favourite) so suggestions can chain from it.'],working:['👅','Nothing here yet. When your child touches or licks a new food, it shows up here.'],refused:['🎉','No foods that have only been refused.']}[histMode];
+      html = `<div class="empty"><span class="big">${msg[0]}</span>${msg[1]}</div>`;
+    }
+  }
+  $('#histList').innerHTML = html;
+}
+
+/* ================= suggestions (food chaining) ================= */
+function similarity(x, a){
+  let score=0; const words=[];
+  if(x.t && a.t){
+    if(x.t===a.t){score+=4;words.push(TEX_WORD[x.t]);}
+    else if((TEX_NEAR[a.t]||[]).includes(x.t)){score+=1.5;words.push(`close texture (${TEX_WORD[a.t]} → ${TEX_WORD[x.t]})`);}
+  }
+  if(x.col && a.col && x.col===a.col){score+=3.5;words.push(COL_WORD[x.col]);}
+  if(x.c && a.c && x.c===a.c){score+=1.5;words.push(catLabel(x.c).toLowerCase());}
+  if(x.f && a.f && x.f===a.f){score+=1;words.push(x.f);}
+  return {score,words};
+}
+function getSuggestions(){
+  const st = foodStats(); const today = todayStr();
+  const accepted = [...st.values()].filter(s=>s.ate>0);
+  const cands = new Map();
+  for(const l of LIB){
+    if(l.ns) continue; const k=key(l.n); const s=st.get(k); if(s && s.ate>0) continue;
+    cands.set(k,{key:k,name:s?s.name:l.n,attrs:s?s.attrs:{c:l.c,t:l.t,col:l.col,f:l.f},hz:l.hz||null,s:s||null});
+  }
+  for(const s of st.values()){
+    if(s.ate>0 || cands.has(s.key)) continue;
+    const h=hazardFor(s.name); if(h && h.ns) continue;
+    cands.set(s.key,{key:s.key,name:s.name,attrs:s.attrs,hz:h?h.hz:null,s});
+  }
+  const out=[];
+  for(const c of cands.values()){
+    let best=null;
+    for(const a of accepted){
+      const r=similarity(c.attrs,a.attrs);
+      const sc = r.score + Math.min(a.ate,5)*0.05; // tiny preference for well-loved foods
+      if(!best || sc>best.sc) best={...r,sc,src:a};
+    }
+    let score, reason, src=null;
+    if(best && best.score>=3){ score=best.sc; src=best.src; reason=`Similar to <b>${esc(best.src.name)}</b>: ${esc(best.words.join(', '))}`; }
+    else if(accepted.length){ score=best?best.sc*0.5:0; reason= best&&best.words.length ? `A bigger step from <b>${esc(best.src.name)}</b> (only ${esc(best.words.join(', '))} in common)` : 'A new direction — nothing they eat is very similar yet'; }
+    else {
+      score=(c.attrs.f==='mild'?1:0)+(['soft','smooth','puree','crunchy'].includes(c.attrs.t)?1:0)+(c.attrs.col==='beige'?1:0)+(c.attrs.col==='yellow'?0.5:0);
+      reason='Mild, simple and familiar-looking — a gentle starting point';
+    }
+    const flags=[]; const s=c.s;
+    if(s && s.touched>0){ score+=2; flags.push(`👅 Touched/licked ${s.touched}× already — keep offering`); }
+    if(s && s.lastRefused){
+      const ago = dayDiff(s.lastRefused,today);
+      if(ago>=0 && ago<=3){ score-=4; flags.push(`🙅 Refused ${relDay(s.lastRefused)} — give it a few days, no pressure`); }
+      else { score-=0.4*Math.min(s.refused,3); flags.push(`Refused ${s.refused}× before (last ${relDay(s.lastRefused)}) — worth another go`); }
+    }
+    if(!s) flags.push('✨ Not tried yet');
+    out.push({...c,score,reason,flags,src});
+  }
+  out.sort((a,b)=>b.score-a.score || a.name.localeCompare(b.name));
+  const perSrc={}, picked=[];
+  for(const x of out){ const k=x.src?x.src.key:'_'; if((perSrc[k]||0)>=3) continue; perSrc[k]=(perSrc[k]||0)+1; picked.push(x); if(picked.length>=8) break; }
+  if(picked.length<5){ for(const x of out){ if(!picked.includes(x)) picked.push(x); if(picked.length>=5) break; } }
+  // repeated exposure matters: keep up to 2 'working on' foods (touched, not refused in last 3 days) in the list
+  const isWorking = x=>x.s && x.s.touched>0 && !(x.s.lastRefused && dayDiff(x.s.lastRefused,today)<=3 && dayDiff(x.s.lastRefused,today)>=0);
+  const wantW = out.filter(isWorking).slice(0,2);
+  for(const w of wantW){
+    if(picked.includes(w)) continue;
+    if(picked.filter(isWorking).length>=2) break;
+    let idx=-1; for(let i=picked.length-1;i>=0;i--){ if(!isWorking(picked[i])){idx=i;break;} }
+    if(picked.length<8) picked.push(w); else if(idx>=0) picked.splice(idx,1,w);
+  }
+  picked.sort((a,b)=>b.score-a.score || a.name.localeCompare(b.name));
+  return {list:picked, acceptedCount:accepted.length};
+}
+function tipsFor(x){
+  const tips=[];
+  if(x.hz) tips.push({haz:true,t:x.hz});
+  if(x.src) tips.push({t:`Offer a small taste next to ${x.src.name} (a safe food) — they don't have to eat it.`});
+  else tips.push({t:'Serve a tiny portion alongside a food they already eat, so the plate still feels safe.'});
+  const t=x.attrs.t, pool=[];
+  if(t==='crunchy') pool.push('Talk about the sound — “crunch!” — and eat some yourself so they can watch.');
+  if(t==='soft'||t==='puree'||t==='smooth') pool.push('Let them explore with fingers, or dip a safe food into it — messy play counts as exposure.');
+  if(t==='chewy') pool.push('Cut into thin strips they can hold and gnaw; chewy foods take practice.');
+  if(t==='lumpy') pool.push('Mixed textures are a big step — try blending half, then gradually leave it lumpier.');
+  if(t==='liquid') pool.push('Offer a small sip from an open or straw cup, or let them dip a cracker in.');
+  pool.push('Touching, smelling or licking is progress — praise the exploring, not the eating.');
+  pool.push('Serve it the same way a few times before changing the shape or brand.');
+  tips.push({t:pool[x.name.length % pool.length]});
+  return tips;
+}
+function renderSuggestions(){
+  const {list,acceptedCount} = getSuggestions();
+  $('#suggIntro').innerHTML = acceptedCount===0
+    ? `<div class="banner warm">👋 <b>No accepted foods logged yet.</b> Log a few foods your little one already eats (even old favourites like toast or yoghurt, marked “Ate it”) and these suggestions will start chaining from them. Until then, here are gentle starting points.</div>`
+    : `<div class="muted small" style="margin:0 4px 10px">Chaining from ${acceptedCount} accepted food${acceptedCount>1?'s':''}. Tap <b>Log it</b> after offering.</div>`;
+  $('#suggList').innerHTML = list.map((x,i)=>{
+    const a=x.attrs;
+    const attrs=[catLabel(a.c),texLabel(a.t),colLabel(a.col),flavLabel(a.f)].filter(Boolean).map(v=>`<span class="pill plain">${esc(v)}</span>`).join('');
+    const tips=tipsFor(x).map(t=>`<li class="${t.haz?'haz':''}">${esc(t.t)}</li>`).join('');
+    return `<div class="sugg" data-sugg="${esc(x.name)}"><div class="hd"><div class="rank">${i+1}</div><div class="nm">${esc(x.name)}</div><span class="spacer"></span>
+      <button type="button" class="btn sm" data-prefill="${esc(x.name)}">Log it</button></div>
+      <div class="why">${x.reason}</div>
+      ${x.flags.map(f=>`<div class="flag">${esc(f)}</div>`).join('')}
+      <div class="attrs">${attrs}</div>
+      <ul class="tips">${tips}</ul></div>`;
+  }).join('') || `<div class="empty">No suggestions right now.</div>`;
+}
+
+/* ================= week ================= */
+let weekOffset=0;
+$('#wkPrev').addEventListener('click',()=>{weekOffset--;renderWeek();});
+$('#wkNext').addEventListener('click',()=>{weekOffset++;renderWeek();});
+function bar(label,n,max,color,id){
+  const w = max? Math.round(n/max*100):0;
+  return `<div class="br"${id?` data-k="${id}"`:''}><span>${label}</span><div class="track"><div class="fill" style="width:${w}%;${color?'background:'+color:''}"></div></div><span class="cnt">${n}</span></div>`;
+}
+function renderWeek(){
+  const mon = addDays(mondayOf(todayStr()), weekOffset*7), sun = addDays(mon,6);
+  $('#wkLabel').textContent = weekOffset===0?'This week':weekOffset===-1?'Last week':weekOffset===1?'Next week':'Week of '+fmt(mon,{day:'numeric',month:'short'});
+  $('#wkRange').textContent = `${fmt(mon,{weekday:'short',day:'numeric',month:'short'})} – ${fmt(sun,{weekday:'short',day:'numeric',month:'short',year:'numeric'})}`;
+  const logs = state.logs.filter(l=>l.date>=mon && l.date<=sun);
+  const distinct = new Set(logs.map(l=>key(l.food)));
+  const firstSeen = {}; for(const l of state.logs){const k=key(l.food); if(!firstSeen[k]||l.date<firstSeen[k]) firstSeen[k]=l.date;}
+  const newFoods = [...distinct].filter(k=>firstSeen[k]>=mon && firstSeen[k]<=sun).length;
+  const byRes = {ate:0,touched:0,refused:0}; logs.forEach(l=>byRes[l.result]++);
+  $('#wkStats').innerHTML = `<div class="stat"><div class="v" id="wkDistinct">${distinct.size}</div><div class="k">different foods</div></div>
+    <div class="stat"><div class="v" id="wkTotal">${logs.length}</div><div class="k">offerings</div></div>
+    <div class="stat"><div class="v" id="wkNew">${newFoods}</div><div class="k">brand-new foods</div></div>`;
+  const maxR = Math.max(...Object.values(byRes),1);
+  $('#wkByResult').innerHTML = bar('😋 Ate',byRes.ate,maxR,'var(--ate)','ate')+bar('👅 Touched',byRes.touched,maxR,'var(--touch)','touched')+bar('🙅 Refused',byRes.refused,maxR,'var(--refuse)','refused');
+  const byCat={}; logs.forEach(l=>byCat[l.category]=(byCat[l.category]||0)+1);
+  const maxC=Math.max(...Object.values(byCat),1);
+  $('#wkByCat').innerHTML = logs.length ? CATS.filter(c=>byCat[c[0]]).map(c=>bar(`${c[2]} ${c[1]}`,byCat[c[0]],maxC,'',c[0])).join('') : '<div class="muted small" style="padding:8px 0">No offerings logged this week.</div>';
+  const t=todayStr(); const perDay=[];
+  for(let i=0;i<7;i++){ const d=addDays(mon,i); perDay.push({d,logs:logs.filter(l=>l.date===d).sort((a,b)=>a.created-b.created)}); }
+  const scale=Math.max(6,...perDay.map(x=>x.logs.length));
+  $('#wkDays').innerHTML = perDay.map(({d,logs:dl})=>{
+    const r={ate:0,touched:0,refused:0}; dl.forEach(l=>r[l.result]++);
+    const seg=['ate','touched','refused'].map(k=>r[k]?`<i class="${k}" style="width:${r[k]/scale*100}%" title="${r[k]} ${RESULTS[k].label}"></i>`:'').join('');
+    return `<div class="d${d===t?' today':''}" data-day="${d}" data-n="${dl.length}"><div class="dl">${fmt(d,{weekday:'short'})}<span>${fmt(d,{day:'numeric',month:'short'})}</span></div>
+      <div><div class="stack">${seg}</div><div class="dfoods">${dl.length?dl.map(l=>RESULTS[l.result].e+' '+esc(l.food)).join(' · '):(d>t?'':'—')}</div></div></div>`;
+  }).join('');
+}
+
+/* ================= data: export / import / clear / example ================= */
+function download(name, text){
+  const blob=new Blob([text],{type:'application/json'}); const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+$('#exportBtn').addEventListener('click',()=>{
+  const payload={app:APP_ID,version:1,exportedAt:new Date().toISOString(),logs:state.logs,settings:state.settings};
+  download(`toddler-food-log-${todayStr()}.json`, JSON.stringify(payload,null,2));
+  toast(`⬇️ Exported ${state.logs.length} log${state.logs.length===1?'':'s'}`);
+});
+$('#importBtn').addEventListener('click',()=>$('#importFile').click());
+$('#importFile').addEventListener('change',async e=>{
+  const f=e.target.files[0]; e.target.value=''; if(!f) return;
+  let data;
+  try{ data=JSON.parse(await f.text()); }catch(err){ toast('⚠️ That file isn’t valid JSON'); return; }
+  const arr = Array.isArray(data)?data:(data&&Array.isArray(data.logs)?data.logs:null);
+  if(!arr){ toast('⚠️ No food logs found in that file'); return; }
+  const good = arr.filter(validLog).map(normLog), bad=arr.length-good.length;
+  if(!good.length){ toast('⚠️ No valid logs found in that file'); return; }
+  modal(`<h2>Import backup</h2><p>Found <b>${good.length}</b> log${good.length===1?'':'s'} in <i>${esc(f.name)}</i>${bad?` (${bad} unreadable entr${bad===1?'y':'ies'} skipped)`:''}.</p>
+    <p class="muted">This device currently has ${state.logs.length} log${state.logs.length===1?'':'s'}. <b>Merge</b> keeps both (duplicates skipped); <b>Replace</b> swaps in the backup.</p>`,
+    [{label:'Merge with current data',cls:'btn',val:'merge'},{label:'Replace current data',cls:'btn ghost',val:'replace'},{label:'Cancel',cls:'btn ghost',val:null}],
+    val=>{
+      if(!val) return;
+      let msg;
+      if(val==='replace'){ state.logs=good; msg=`⬆️ Imported ${good.length} log${good.length===1?'':'s'}`; }
+      else { const ids=new Set(state.logs.map(l=>l.id)); let added=0; for(const l of good){ if(!ids.has(l.id)){state.logs.push(l);ids.add(l.id);added++;} } msg=`⬆️ Merged — ${added} new log${added===1?'':'s'} added`; }
+      state.settings = Object.assign({}, state.settings, {introSeen:true});
+      save(); renderAll(); toast(msg);
+    });
+});
+$('#clearBtn').addEventListener('click',()=>{
+  if(!state.logs.length){toast('There’s no data to clear');return;}
+  if(!confirm(`Clear ALL data?\n\nThis permanently deletes all ${state.logs.length} logs from this device. Export a backup first if you might need it.`)) return;
+  state={version:1,logs:[],settings:{introSeen:true}}; save(); resetForm(); renderAll(); toast('🗑️ All data cleared');
+});
+function exampleLogs(){
+  const t=todayStr(); const L=[]; let c=Date.now()-1e7;
+  const add=(ago,name,res,notes)=>{const lib=LIBMAP.get(key(name));L.push(normLog({id:'ex'+L.length+'_'+Math.random().toString(36).slice(2,6),date:addDays(t,-ago),food:name,category:lib.c,texture:lib.t,colour:lib.col,flavour:lib.f,result:res,notes:notes||'',created:c+=1000,example:true}));};
+  add(13,'Toast','ate','Plain with butter — always a winner'); add(13,'Banana','refused');
+  add(12,'Yoghurt, vanilla','ate'); add(12,'Broccoli, steamed','refused','Pushed it off the plate');
+  add(11,'Rice crackers','ate'); add(11,'Toast','ate');
+  add(10,'Hot chips','ate'); add(10,'Pumpkin mash','touched','Poked it with a finger');
+  add(9,'Toast','ate'); add(9,'Scrambled egg','refused');
+  add(8,'Yoghurt, vanilla','ate'); add(8,'Corn thins','touched','Licked it');
+  add(7,'Arrowroot biscuits','ate'); add(7,'Banana','touched');
+  add(6,'Potato gems','ate','Next to toast'); add(6,'Pumpkin mash','touched');
+  add(5,'Toast','ate'); add(5,'Cucumber sticks','refused');
+  add(4,'Rice crackers','ate'); add(4,'Custard','touched','Put the spoon in their mouth, then spat it out');
+  add(3,'Yoghurt, vanilla','ate'); add(3,'Chicken nuggets','ate','First time! Offered next to chips');
+  add(2,'Toast','ate'); add(2,'Pikelets','refused');
+  add(1,'Hot chips','ate'); add(1,'Corn thins','ate','Ate two!');
+  add(0,'Toast','ate'); add(0,'Pumpkin mash','refused','Tired, not interested');
+  return L;
+}
+$('#loadExample').addEventListener('click',()=>{
+  if(state.logs.some(l=>!l.example) && !confirm('Add made-up example logs alongside your real data? You can remove just the example logs later.')) return;
+  state.logs = state.logs.filter(l=>!l.example).concat(exampleLogs()); save(); renderAll(); toast('🧪 Example data loaded');
+});
+$('#removeExample').addEventListener('click',()=>{
+  const n=state.logs.filter(l=>l.example).length;
+  if(!confirm(`Remove ${n} example logs? Your real logs are kept.`)) return;
+  state.logs=state.logs.filter(l=>!l.example); save(); renderAll(); toast('Example data removed');
+});
+
+/* ================= modal / intro ================= */
+function modal(html, buttons, cb){
+  const root=$('#modalRoot');
+  root.innerHTML=`<div class="modal-bg" role="dialog" aria-modal="true"><div class="modal">${html}<div class="btns">${buttons.map((b,i)=>`<button type="button" class="${b.cls}" data-mi="${i}">${esc(b.label)}</button>`).join('')}</div></div></div>`;
+  root.querySelectorAll('[data-mi]').forEach(b=>b.addEventListener('click',()=>{const v=buttons[+b.dataset.mi].val;root.innerHTML='';if(cb)cb(v);}));
+}
+function showIntro(){
+  modal(`<h2>👋 Welcome to Toddler Food Explorer</h2>
+    <p>Log every food offered to your little one — eaten, touched, licked or refused. Over time you'll see which foods are safe, which they're warming up to, and get <b>food chaining</b> ideas: small steps from foods they already like.</p>
+    <p style="background:var(--accent-bg);border-radius:12px;padding:10px 12px"><b>This is a tracker, not medical advice.</b> Talk to your GP, child health nurse or a paediatric dietitian about feeding concerns.</p>
+    <p class="caution" style="margin-top:8px">⚠️ A gentle reminder: some foods are choking hazards for under-3s — <b>whole nuts, whole grapes, popcorn and hard raw veg</b>. Quarter grapes, grate or steam carrot, and always supervise while they eat.</p>
+    <p class="muted small">Your data stays on this device only. Use Data → Export to back it up.</p>`,
+    [{label:'Got it — let’s start',cls:'btn',val:true}],
+    ()=>{state.settings.introSeen=true;save();});
+}
+$('#showIntro').addEventListener('click',showIntro);
+
+/* ================= nav ================= */
+function showView(v){
+  $$('.view').forEach(s=>s.classList.toggle('active',s.id==='view-'+v));
+  $$('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
+  if(v==='week') renderWeek(); if(v==='next') renderSuggestions(); if(v==='history') renderHistory();
+  if(v!=='log') window.scrollTo({top:0});
+}
+$('#nav').addEventListener('click',e=>{const b=e.target.closest('button[data-view]');if(b)showView(b.dataset.view);});
+function renderAll(){
+  renderToday(); renderHistory(); renderSuggestions(); renderWeek();
+  const n=state.logs.length, ex=state.logs.filter(l=>l.example).length, foods=foodStats().size;
+  $('#dataCount').textContent = `${n} log${n===1?'':'s'} · ${foods} different food${foods===1?'':'s'}${ex?` · ${ex} are example logs`:''}`;
+  $('#demoBanner').classList.toggle('hidden',!ex);
+  $('#removeExample').classList.toggle('hidden',!ex);
+}
+
+/* ================= init ================= */
+$('#fDate').value=todayStr();
+syncChips(); updateDateHint();
+renderAll();
+if(!state.settings.introSeen) showIntro();
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ if(!form.editingId && !foodIn.value) $('#fDate').value=todayStr(); updateDateHint(); renderAll(); }});
+window.__LFE = {getSuggestions, foodStats, get state(){return state;}}; // for testing / debugging only
+})();
+</script>
+</body>
+</html>
